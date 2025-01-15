@@ -8,3 +8,7 @@ Bug Fixes:
     - This fixes a bug with Valkyrien-Skies-2 stopping log messages.
 - [#463] Fixed jar copied mods not being handled correctly in Java 8.
 
+Changes from updating Fabric Loader from 0.16.9 to 0.16.10:
+
+- Support the 1.21.5 development cycle.
+
