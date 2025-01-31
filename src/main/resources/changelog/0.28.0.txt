@@ -7,6 +7,7 @@ Bug Fixes:
 - Fixed mod files being searched in preference to minecraft library files.
     - This fixes a bug with Valkyrien-Skies-2 stopping log messages.
 - [#463] Fixed jar copied mods not being handled correctly in Java 8.
+- Fixed mod breaks sometimes being described as dependencies in complex solver errors.
 
 Changes from updating Fabric Loader from 0.16.9 to 0.16.10:
 
