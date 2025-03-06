@@ -1,0 +1,3 @@
+Bug Fixes:
+
+- [#470] Fixed quilt-to-fabric ModContainer wrapper returning itself from getContainingMod()
