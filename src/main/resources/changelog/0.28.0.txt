@@ -8,6 +8,8 @@ Bug Fixes:
 - [#463] Fixed jar copied mods not being handled correctly in Java 8.
 - [#462] Improve QuiltBasePath.toUri not being able to handle spaces in path names.
 - Fixed mod breaks sometimes being described as dependencies in complex solver errors.
+- Ignore fabric version requirements that have no valid versions
+    - Previously this caused a crash, however now this just logs a warning.
 
 Changes from updating Fabric Loader from 0.16.9 to 0.16.10:
 
