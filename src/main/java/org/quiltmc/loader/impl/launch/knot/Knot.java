@@ -149,6 +149,9 @@ public final class Knot extends QuiltLauncherBase {
 		loader.load();
 		loader.freeze();
 
+		// Setting this fabric-added mixin property fixes a server specific crash when mixin is before loader on the classpath
+		// Newer versions of mixin will likely fix this (https://github.com/SpongePowered/Mixin/pull/694)
+		System.setProperty("mixin.service", MixinServiceKnot.class.getName());
 		MixinBootstrap.init();
 		QuiltMixinBootstrap.init(getEnvironmentType(), loader);
 		QuiltLauncherBase.finishMixinBootstrapping();
