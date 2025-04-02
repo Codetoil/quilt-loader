@@ -55,11 +55,16 @@ import net.fabricmc.mappingio.tree.MappingTreeView.MethodMappingView;
 // So we must make this LEGACY_NO_WARN to prevent unavoidable warnings or errors.
 public class QuiltReflectiveFixUtil {
 
+	private static boolean noMappings = false;
 	private static Map<String, Set<String>> namedOuterToInnerClassCache;
 
 	/** Fixes a class name that is about to be passed to {@link Class#forName(String)} to ensure it's correctly
 	 * mapped. */
 	public static String fixClassName(String name) {
+
+		if (noMappings) {
+			return name;
+		}
 
 		// Handle improperly named inner classes
 		// This mostly occurs when the class is anonymous (and so has a "$1" name in intermediary)
@@ -84,6 +89,10 @@ public class QuiltReflectiveFixUtil {
 
 			MappingResolver mappings = QuiltLoader.getMappingResolver();
 			MappingTreeView tree = QuiltLauncherBase.getLauncher().getMappingConfiguration().getMappings();
+			if (tree == null) {
+				noMappings = true;
+				return name;
+			}
 			int namespace = tree.getNamespaceId(mappings.getCurrentRuntimeNamespace());
 
 			for (ClassMappingView cls : tree.getClasses()) {
@@ -161,6 +170,11 @@ public class QuiltReflectiveFixUtil {
 	}
 
 	public static String fixDeclaredFieldName(String fieldName, Class<?> classIn) {
+
+		if (noMappings) {
+			return fieldName;
+		}
+
 		try {
 			classIn.getDeclaredField(fieldName);
 			// No need to fix it if it already exists
@@ -173,6 +187,11 @@ public class QuiltReflectiveFixUtil {
 		String runtimeNamespace = resolver.getCurrentRuntimeNamespace();
 
 		MappingTreeView mappings = QuiltLauncherBase.getLauncher().getMappingConfiguration().getMappings();
+		if (mappings == null) {
+			noMappings = true;
+			return fieldName;
+		}
+
 		String name = getMappingsName(classIn);
 		ClassMappingView classMappings = mappings.getClass(name, mappings.getNamespaceId(runtimeNamespace));
 
@@ -198,6 +217,11 @@ public class QuiltReflectiveFixUtil {
 	}
 
 	public static String fixFieldName(String fieldName, Class<?> classIn) {
+
+		if (noMappings) {
+			return fieldName;
+		}
+
 		try {
 			classIn.getField(fieldName);
 			// No need to fix it if it already exists
@@ -207,6 +231,11 @@ public class QuiltReflectiveFixUtil {
 		}
 
 		MappingTreeView mappings = QuiltLauncherBase.getLauncher().getMappingConfiguration().getMappings();
+		if (mappings == null) {
+			noMappings = true;
+			return fieldName;
+		}
+
 		MappingResolver resolver = QuiltLoader.getMappingResolver();
 		String runtimeNamespace = resolver.getCurrentRuntimeNamespace();
 		int namespaceId = mappings.getNamespaceId(runtimeNamespace);
@@ -249,6 +278,11 @@ public class QuiltReflectiveFixUtil {
 	}
 
 	public static MethodIntermediateArguments fixDeclaredMethodName(Class<?> classIn, String methodName, Class<?>[] args) {
+
+		if (noMappings) {
+			return new MethodIntermediateArguments(classIn, methodName, args);
+		}
+
 		try {
 			classIn.getDeclaredMethod(methodName, args);
 			// No need to fix it if it already exists
@@ -261,6 +295,11 @@ public class QuiltReflectiveFixUtil {
 		String runtimeNamespace = resolver.getCurrentRuntimeNamespace();
 
 		MappingTreeView mappings = QuiltLauncherBase.getLauncher().getMappingConfiguration().getMappings();
+		if (mappings == null) {
+			noMappings = true;
+			return new MethodIntermediateArguments(classIn, methodName, args);
+		}
+
 		String name = getMappingsName(classIn);
 		ClassMappingView classMappings = mappings.getClass(name, mappings.getNamespaceId(runtimeNamespace));
 
@@ -297,6 +336,11 @@ public class QuiltReflectiveFixUtil {
 	}
 
 	public static MethodIntermediateArguments fixMethodName(Class<?> classIn, String name, Class<?>[] args) {
+
+		if (noMappings) {
+			return new MethodIntermediateArguments(classIn, name, args);
+		}
+
 		try {
 			classIn.getMethod(name, args);
 			// No need to fix it if it already exists
@@ -428,6 +472,12 @@ public class QuiltReflectiveFixUtil {
 		MappingResolver resolver = QuiltLoader.getMappingResolver();
 		MappingTreeView mappings = QuiltLauncherBase.getLauncher().getMappingConfiguration().getMappings();
 
+		if (mappings == null) {
+			noMappings = true;
+			// ensures all methods abort
+			return;
+		}
+
 		int namespace = mappings.getNamespaceId(resolver.getCurrentRuntimeNamespace());
 		// Test if the given class is mappable
 		if (mappings.getClass(type.getName().replace('.', '/'), namespace) != null) {
@@ -448,6 +498,10 @@ public class QuiltReflectiveFixUtil {
 	}
 
 	public static LookupIntermediateArguments fixLookupFindField(Lookup lookup, Class<?> owner, String name, Class<?> type) {
+
+		if (noMappings) {
+			return new LookupIntermediateArguments(lookup, owner, name, type);
+		}
 
 		MappingResolver resolver = QuiltLoader.getMappingResolver();
 		String descriptor = Type.getDescriptor(type);
@@ -523,6 +577,10 @@ public class QuiltReflectiveFixUtil {
 
 	public static LookupIntermediateArguments fixLookupFindMethod(Lookup lookup, Class<?> owner, String name,
 		MethodType type) {
+
+		if (noMappings) {
+			return new LookupIntermediateArguments(lookup, owner, name, type);
+		}
 
 		MappingResolver resolver = QuiltLoader.getMappingResolver();
 
