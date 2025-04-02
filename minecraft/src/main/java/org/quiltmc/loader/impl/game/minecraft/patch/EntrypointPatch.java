@@ -53,6 +53,7 @@ import org.quiltmc.loader.impl.game.minecraft.Hooks;
 public class EntrypointPatch extends GamePatch {
 	/* QUILT */private static final VersionPredicate BEFORE_1_17 = createVersionPredicate("<=1.17");
 	private static final VersionPredicate VERSION_1_19_4 = createVersionPredicate(">=1.19.4-");
+	private static final VersionPredicate VERSION_25w14craftmine = createVersionPredicate("1.21.6-alpha.25.14.craftmine");
 
 	private final MinecraftGameProvider gameProvider;
 
@@ -320,7 +321,8 @@ public class EntrypointPatch extends GamePatch {
 				// If we do not find this, then we are certain this is 20w22a.
 				MethodNode serverStartMethod = findMethod(mainClass, method -> {
 					if ((method.access & Opcodes.ACC_SYNTHETIC) == 0 // reject non-synthetic
-							|| method.name.equals("main") && method.desc.equals("([Ljava/lang/String;)V")) { // reject main method (theoretically superfluous now)
+							|| method.name.equals("main") && method.desc.equals("([Ljava/lang/String;)V") // reject main method (theoretically superfluous now)
+							|| VERSION_25w14craftmine.test(gameVersion) && method.parameters.size() < 10) { // reject problematic extra methods
 						return false;
 					}
 
