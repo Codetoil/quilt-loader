@@ -21,6 +21,7 @@ import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.Map;
 
+import org.jetbrains.annotations.VisibleForTesting;
 import org.quiltmc.loader.impl.FormattedException;
 import org.quiltmc.loader.impl.QuiltLoaderImpl;
 import org.quiltmc.loader.impl.game.GameProvider;
@@ -38,7 +39,6 @@ public abstract class QuiltLauncherBase implements QuiltLauncher {
 	private static boolean mixinReady;
 	private static Map<String, Object> properties;
 	private static QuiltLauncher launcher;
-	private static MappingConfiguration mappingConfiguration = new MappingConfiguration();
 
 	protected QuiltLauncherBase() {
 		setLauncher(this);
@@ -46,11 +46,6 @@ public abstract class QuiltLauncherBase implements QuiltLauncher {
 
 	public static Class<?> getClass(String className) throws ClassNotFoundException {
 		return Class.forName(className, true, getLauncher().getTargetClassLoader());
-	}
-
-	@Override
-	public MappingConfiguration getMappingConfiguration() {
-		return mappingConfiguration;
 	}
 
 	protected static void setProperties(Map<String, Object> propertiesA) {
@@ -61,7 +56,8 @@ public abstract class QuiltLauncherBase implements QuiltLauncher {
 		properties = propertiesA;
 	}
 
-	private static void setLauncher(QuiltLauncher launcherA) {
+	@VisibleForTesting
+	public static void setLauncher(QuiltLauncher launcherA) {
 		if (launcher != null && launcher != launcherA) {
 			throw new RuntimeException("Duplicate setLauncher call!");
 		}

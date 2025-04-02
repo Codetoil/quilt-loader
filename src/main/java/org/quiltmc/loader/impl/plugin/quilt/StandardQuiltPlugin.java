@@ -394,11 +394,10 @@ public class StandardQuiltPlugin extends BuiltinQuiltPlugin {
 				context().addFileToScan(inner, jarNode, false);
 			}
 
-			// a mod needs to be remapped if we are in a development environment, and the mod
-			// did not come from the classpath
-			boolean requiresRemap = !location.onClasspath() && QuiltLoader.isDevelopmentEnvironment();
+			// mods on the classpath should not be remapped by Loader
+			boolean couldRequireRemap = !location.onClasspath();
 			return new ModLoadOption[] { new QuiltModOption(
-				context(), meta, from, fileIcon, root, location.isDirect(), requiresRemap
+				context(), meta, from, fileIcon, root, location.isDirect(), couldRequireRemap
 			) };
 		} catch (ParseException parse) {
 			QuiltLoaderText title = QuiltLoaderText.translate(

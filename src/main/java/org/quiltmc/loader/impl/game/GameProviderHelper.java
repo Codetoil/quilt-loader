@@ -35,7 +35,6 @@ import net.fabricmc.tinyremapper.TinyRemapper;
 import org.quiltmc.loader.impl.FormattedException;
 import org.quiltmc.loader.impl.QuiltLoaderImpl;
 import org.quiltmc.loader.impl.launch.common.QuiltLauncher;
-import org.quiltmc.loader.impl.launch.common.MappingConfiguration;
 import org.quiltmc.loader.impl.util.SystemProperties;
 import org.quiltmc.loader.impl.util.UrlConversionException;
 import org.quiltmc.loader.impl.util.UrlUtil;
@@ -165,28 +164,29 @@ public final class GameProviderHelper {
 
 	private static boolean emittedInfo = false;
 
-	public static Map<String, Path> deobfuscate(Map<String, Path> inputFileMap, String gameId, String gameVersion, Path gameDir, QuiltLauncher launcher) {
+	public static Map<String, Path> deobfuscate(Map<String, Path> inputFileMap, String gameId, String gameVersion, Path gameDir, QuiltLauncher launcher, String targetNamespace) {
 		Log.debug(LogCategory.GAME_REMAP, "Requesting deobfuscation of %s", inputFileMap);
 
 		if (launcher.isDevelopment()) { // in-dev is already deobfuscated
 			return inputFileMap;
 		}
 
-		MappingConfiguration mappingConfig = launcher.getMappingConfiguration();
+		if (launcher.getMappingConfiguration() instanceof MappingConfigurationImpl) {
+			MappingConfigurationImpl mappingConfig = (MappingConfigurationImpl) launcher.getMappingConfiguration();
+			if (!mappingConfig.matches(gameId, gameVersion)) {
+				String mappingsGameId = mappingConfig.getGameId();
+				String mappingsGameVersion = mappingConfig.getGameVersion();
 
-		if (!mappingConfig.matches(gameId, gameVersion)) {
-			String mappingsGameId = mappingConfig.getGameId();
-			String mappingsGameVersion = mappingConfig.getGameVersion();
-
-			throw new FormattedException("Incompatible mappings",
-					String.format("Supplied mappings for %s %s are incompatible with %s %s, this is likely caused by launcher misbehavior",
-							(mappingsGameId != null ? mappingsGameId : "(unknown)"),
-							(mappingsGameVersion != null ? mappingsGameVersion : "(unknown)"),
-							gameId,
-							gameVersion));
+				throw new FormattedException("Incompatible mappings",
+						String.format("Supplied mappings for %s %s are incompatible with %s %s, this is likely caused by launcher misbehavior",
+								(mappingsGameId != null ? mappingsGameId : "(unknown)"),
+								(mappingsGameVersion != null ? mappingsGameVersion : "(unknown)"),
+								gameId,
+								gameVersion));
+			}
 		}
 
-		String targetNamespace = mappingConfig.getTargetNamespace();
+		MappingConfiguration mappingConfig = launcher.getMappingConfiguration();
 		MappingTreeView mappings = mappingConfig.getMappings();
 
 		if (mappings == null

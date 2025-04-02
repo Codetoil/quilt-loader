@@ -285,7 +285,7 @@ public final class V1ModMetadataReader {
 			@Nullable
 			JsonLoaderValue intermediateMappingsValue = quiltLoader.get(QLKeys.INTERMEDIATE_MAPPINGS);
 
-			String[] supported_mappings = { "org.quiltmc:hashed", "net.fabricmc:intermediary" };
+			String[] supported_mappings = { "org.quiltmc:hashed", "net.fabricmc:intermediary", "org.quiltmc.experimental:mojang" };
 			String mappings = "org.quiltmc:hashed";
 
 			if (intermediateMappingsValue != null) {
@@ -307,6 +307,10 @@ public final class V1ModMetadataReader {
 			// Until Loader supports hashed mappings
 			if (mappings.equals("org.quiltmc:hashed")) {
 				throw new ParseException("Oh no! This version of Quilt Loader doesn't support hashed mappings, please update Quilt Loader to use this mod.");
+			}
+
+			if (mappings.equals("org.quiltmc.experimental:mojang") && !QuiltLoader.getMappingResolver().getNamespaces().contains("mojang")) {
+				throw new ParseException("Oh no! This instance of Quilt Loader does not have the experimental support for Mojang mappings enabled.");
 			}
 
 			builder.intermediateMappings = mappings;

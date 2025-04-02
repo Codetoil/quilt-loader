@@ -36,6 +36,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jetbrains.annotations.Nullable;
 import org.quiltmc.loader.api.ModDependency;
 import org.quiltmc.loader.api.ModDependencyIdentifier;
 import org.quiltmc.loader.api.Version;
@@ -46,6 +47,8 @@ import org.quiltmc.loader.impl.entrypoint.GameTransformer;
 import org.quiltmc.loader.impl.game.GameProvider;
 import org.quiltmc.loader.impl.game.GameProviderHelper;
 import org.quiltmc.loader.impl.game.LibClassifier;
+import org.quiltmc.loader.impl.game.MappingConfiguration;
+import org.quiltmc.loader.impl.game.MappingConfigurationImpl;
 import org.quiltmc.loader.impl.game.minecraft.patch.BrandingPatch;
 import org.quiltmc.loader.impl.game.minecraft.patch.EntrypointPatch;
 import org.quiltmc.loader.impl.game.minecraft.patch.TinyFDPatch;
@@ -83,6 +86,7 @@ public class MinecraftGameProvider implements GameProvider {
 	private String entrypoint;
 	private Arguments arguments;
 	private final List<Path> gameJars = new ArrayList<>(2); // env game jar and common game jar, potentially
+	private Map<String, List<Path>> gameJarsByNamespace = new HashMap<>();
 	private Path realmsJar;
 	private final Set<Path> logJars = new HashSet<>();
 	private boolean log4jAvailable;
@@ -91,12 +95,11 @@ public class MinecraftGameProvider implements GameProvider {
 	private McVersion versionData;
 	private boolean useGameJarForLogging;
 	private boolean hasModLoader = false;
-
 	private final GameTransformer transformer = new GameTransformer(
 			new EntrypointPatch(this),
 			new BrandingPatch(),
 			new TinyFDPatch());
-
+	private MappingConfigurationImpl mappingConfiguration = new MappingConfigurationImpl();
 	@Override
 	public String getGameId() {
 		return "minecraft";
@@ -167,8 +170,12 @@ public class MinecraftGameProvider implements GameProvider {
 		return Collections.singletonList(new BuiltinMod(paths, metadata.build()));
 	}
 
-	public Path getGameJar() {
-		return gameJars.get(0);
+	@Override
+	public List<Path> getGameJars(@Nullable String namespace) {
+		if (namespace == null) {
+			return gameJarsByNamespace.get(QuiltLauncherBase.getLauncher().getTargetNamespace());
+		}
+		return gameJarsByNamespace.get(namespace);
 	}
 
 	@Override
@@ -186,13 +193,8 @@ public class MinecraftGameProvider implements GameProvider {
 	}
 
 	@Override
-	public boolean isObfuscated() {
-		return true; // generally yes...
-	}
-
-	@Override
-	public String getNamespace() {
-		return QuiltLauncherBase.getLauncher().isDevelopment() ? "named" : "intermediary";
+	public MappingConfiguration getMappingConfiguration() {
+		return mappingConfiguration;
 	}
 
 	@Override
@@ -358,68 +360,82 @@ public class MinecraftGameProvider implements GameProvider {
 
 	@Override
 	public void initialize(QuiltLauncher launcher) {
-		if (isObfuscated()) {
-			Map<String, Path> obfJars = new HashMap<>(3);
-			String[] names = new String[gameJars.size()];
+		Map<String, Path> obfJars = new HashMap<>(3);
+		String[] names = new String[gameJars.size()];
 
-			for (int i = 0; i < gameJars.size(); i++) {
-				String name;
+		for (int i = 0; i < gameJars.size(); i++) {
+			String name;
 
-				if (i == 0) {
-					name = envType.name().toLowerCase(Locale.ENGLISH);
-				} else if (i == 1) {
-					name = "common";
-				} else {
-					name = String.format(Locale.ENGLISH, "extra-%d", i - 2);
-				}
-
-				obfJars.put(name, gameJars.get(i));
-				names[i] = name;
+			if (i == 0) {
+				name = envType.name().toLowerCase(Locale.ENGLISH);
+			} else if (i == 1) {
+				name = "common";
+			} else {
+				name = String.format(Locale.ENGLISH, "extra-%d", i - 2);
 			}
 
-			if (realmsJar != null) {
-				obfJars.put("realms", realmsJar);
-			}
+			obfJars.put(name, gameJars.get(i));
+			names[i] = name;
+		}
 
-			for (Path obf : obfJars.values()) {
-				launcher.hideParentPath(obf);
-			}
+		if (realmsJar != null) {
+			obfJars.put("realms", realmsJar);
+		}
 
-			try {
-				obfJars = GameProviderHelper.deobfuscate(obfJars,
-						getGameId(), getNormalizedGameVersion(),
-						getLaunchDirectory(),
-						launcher);
-			} catch (RuntimeException e) {
-				if ("Unfixable conflicts".equals(e.getMessage())) {
-					String source = launcher.getMappingConfiguration().getMappingsSource().replace(File.separator, "/");
-					// Check for known cases
-					// Intermediary
-					Pattern intermediary = Pattern.compile(".+/net/fabricmc/intermediary/([^/]+)/intermediary-([^/]+)\\.jar.+");
-					Matcher matcher = intermediary.matcher(source);
-					if (matcher.matches()) {
-						String version1 = matcher.group(1);
-						String version2 = matcher.group(2);
-						if (version1.equals(version2)) {
-							// Okay, probably an intermediary version
-							if (!version1.equals(getRawGameVersion())) {
-								throw new RuntimeException("Mappings version is mismatched with minecraft version " + version1 + " vs mc " + getRawGameVersion(), e);
-							}
+		for (Path obf : obfJars.values()) {
+			launcher.hideParentPath(obf);
+		}
+		if (!launcher.isDevelopment()) {
+			gameJarsByNamespace.put("official", Collections.unmodifiableList(new ArrayList<>(obfJars.values())));
+		}
+
+		Map<String, Path> newObfJars;
+		try {
+			newObfJars = GameProviderHelper.deobfuscate(obfJars,
+					getGameId(), getNormalizedGameVersion(),
+					getLaunchDirectory(),
+					launcher, launcher.getTargetNamespace());
+		} catch (RuntimeException e) {
+			if ("Unfixable conflicts".equals(e.getMessage())) {
+				String source = ((MappingConfigurationImpl) getMappingConfiguration()).getMappingsSource().replace(File.separator, "/");
+				// Check for known cases
+				// Intermediary
+				Pattern intermediary = Pattern.compile(".+/net/fabricmc/intermediary/([^/]+)/intermediary-([^/]+)\\.jar.+");
+				Matcher matcher = intermediary.matcher(source);
+				if (matcher.matches()) {
+					String version1 = matcher.group(1);
+					String version2 = matcher.group(2);
+					if (version1.equals(version2)) {
+						// Okay, probably an intermediary version
+						if (!version1.equals(getRawGameVersion())) {
+							throw new RuntimeException("Mappings version is mismatched with minecraft version " + version1 + " vs mc " + getRawGameVersion(), e);
 						}
 					}
 				}
-				throw e;
 			}
-
-			for (int i = 0; i < gameJars.size(); i++) {
-				Path newJar = obfJars.get(names[i]);
-				Path oldJar = gameJars.set(i, newJar);
-
-				if (logJars.remove(oldJar)) logJars.add(newJar);
-			}
-
-			realmsJar = obfJars.get("realms");
+			throw e;
 		}
+
+		for (int i = 0; i < gameJars.size(); i++) {
+			Path newJar = newObfJars.get(names[i]);
+			Path oldJar = gameJars.set(i, newJar);
+
+			if (logJars.remove(oldJar)) logJars.add(newJar);
+		}
+
+		realmsJar = newObfJars.get("realms");
+		gameJarsByNamespace.put(launcher.getTargetNamespace(), Collections.unmodifiableList(new ArrayList<>(newObfJars.values())));
+
+		if (!launcher.isDevelopment()) {
+			for (String namespace : getMappingConfiguration().getNamespaces()) {
+				if (!namespace.equals("official") && !namespace.equals(launcher.getTargetNamespace())) {
+					Map<String, Path> output = GameProviderHelper.deobfuscate(obfJars, getGameId(), getNormalizedGameVersion(), getLaunchDirectory(), launcher, namespace);
+					gameJarsByNamespace.put(namespace, Collections.unmodifiableList(new ArrayList<>(output.values())));
+				}
+			}
+		}
+
+		gameJarsByNamespace = Collections.unmodifiableMap(gameJarsByNamespace);
 
 		if (!logJars.isEmpty() && !Boolean.getBoolean(SystemProperties.UNIT_TEST)) {
 			for (Path jar : logJars) {
@@ -433,7 +449,7 @@ public class MinecraftGameProvider implements GameProvider {
 
 		setupLogHandler(launcher, true);
 
-		transformer.locateEntrypoints(launcher, getNamespace(), gameJars);
+		transformer.locateEntrypoints(launcher, QuiltLauncherBase.getLauncher().getTargetNamespace(), gameJars);
 	}
 
 	private void setupLogHandler(QuiltLauncher launcher, boolean useTargetCl) {

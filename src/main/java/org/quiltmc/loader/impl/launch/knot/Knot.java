@@ -26,6 +26,7 @@ import org.quiltmc.loader.impl.config.QuiltConfigImpl;
 import org.quiltmc.loader.impl.entrypoint.EntrypointUtils;
 import org.quiltmc.loader.impl.entrypoint.GameTransformer;
 import org.quiltmc.loader.impl.game.GameProvider;
+import org.quiltmc.loader.impl.game.MappingConfiguration;
 import org.quiltmc.loader.impl.launch.common.QuiltLauncherBase;
 import org.quiltmc.loader.impl.launch.common.QuiltMixinBootstrap;
 import org.quiltmc.loader.impl.util.FileUtil;
@@ -152,7 +153,6 @@ public final class Knot extends QuiltLauncherBase {
 		// Setting this fabric-added mixin property fixes a server specific crash when mixin is before loader on the classpath
 		// Newer versions of mixin will likely fix this (https://github.com/SpongePowered/Mixin/pull/694)
 		System.setProperty("mixin.service", MixinServiceKnot.class.getName());
-		MixinBootstrap.init();
 		QuiltMixinBootstrap.init(getEnvironmentType(), loader);
 		QuiltLauncherBase.finishMixinBootstrapping();
 
@@ -263,12 +263,6 @@ public final class Knot extends QuiltLauncherBase {
 	}
 
 	@Override
-	public String getTargetNamespace() {
-		// TODO: Won't work outside of Yarn
-		return isDevelopment ? "named" : "intermediary";
-	}
-
-	@Override
 	public List<Path> getClassPath() {
 		return classPath;
 	}
@@ -276,6 +270,11 @@ public final class Knot extends QuiltLauncherBase {
 	@Override
 	public GameTransformer getEntrypointTransformer() {
 		return provider.getEntrypointTransformer();
+	}
+
+	@Override
+	public MappingConfiguration getMappingConfiguration() {
+		return provider.getMappingConfiguration();
 	}
 
 	@Override
