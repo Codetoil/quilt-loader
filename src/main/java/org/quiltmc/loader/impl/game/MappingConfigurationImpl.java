@@ -95,18 +95,21 @@ public class MappingConfigurationImpl implements MappingConfiguration {
 	}
 
 	@Nullable
+	@Override
 	public MappingTreeView getMappings() {
 		initialize();
 
 		return mappings;
 	}
 
+	@Override
 	public List<String> getNamespaces() {
 		initialize();
 
 		return namespaces;
 	}
 
+	@Override
 	public String getTargetNamespace() {
 		if (targetNamespace == null) {
 			targetNamespace = System.getProperty(SystemProperties.TARGET_NAMESPACE, QuiltLauncherBase.getLauncher().isDevelopment() ? "named" : "intermediary");
