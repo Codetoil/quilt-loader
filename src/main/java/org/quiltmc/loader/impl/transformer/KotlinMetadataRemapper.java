@@ -16,22 +16,30 @@
 
 package org.quiltmc.loader.impl.transformer;
 
-import net.fabricmc.tinyremapper.api.TrClass;
-
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.Remapper;
-import org.objectweb.asm.tree.AnnotationNode;
 import org.quiltmc.loader.impl.QuiltLoaderImpl;
+import org.quiltmc.loader.impl.util.log.Log;
+import org.quiltmc.loader.impl.util.log.LogCategory;
 
-import java.util.Iterator;
-import java.util.List;
+import net.fabricmc.tinyremapper.api.TrClass;
 
 public class KotlinMetadataRemapper extends ClassVisitor {
 	Remapper remapper;
+
+	String currentName;
+
 	protected KotlinMetadataRemapper(TrClass cls, ClassVisitor parent) {
 		super(QuiltLoaderImpl.ASM_VERSION, parent);
 		this.remapper = cls.getEnvironment().getRemapper();
+	}
+
+	@Override
+	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+		super.visit(version, access, name, signature, superName, interfaces);
+		currentName = name;
 	}
 
 	// This  is based off the observation that the nice, clean, metadata remapper written for Loom in Kotlin
@@ -51,15 +59,7 @@ public class KotlinMetadataRemapper extends ClassVisitor {
 							@Override
 							public void visit(String name, Object value) {
 								if (value instanceof String) {
-									String candidate = (String) value;
-									if (candidate.startsWith("(")) {
-										candidate = remapper.mapMethodDesc(candidate);
-									} else if (candidate.startsWith("L")) { // this could technically catch strays but it should just not do anything
-										candidate = remapper.mapDesc(candidate);
-									} else if (candidate.startsWith("class_") || candidate.contains("/")) { // must go last to not accidentally catch descriptors
-										candidate = remapper.map(candidate);
-									} // else hope nothing goes wrong
-									value = candidate;
+									value = remapCandidate((String) value);
 								}
 
 								super.visit(name, value);
@@ -71,5 +71,27 @@ public class KotlinMetadataRemapper extends ClassVisitor {
 			};
 		}
 		return super.visitAnnotation(descriptor, visible);
+	}
+
+	private String remapCandidate(String candidate) {
+		try {
+			if (candidate.startsWith("(")) {
+				candidate = remapper.mapMethodDesc(candidate);
+			} else if (candidate.startsWith("L")) { // this could technically catch strays but it should just not do anything
+				candidate = remapper.mapDesc(candidate);
+			} else if (candidate.startsWith("class_") || candidate.contains("/")) { // must go last to not accidentally catch descriptors
+				candidate = remapper.map(candidate);
+			} else {
+				// hope nothing goes wrong
+			}
+		} catch (IllegalArgumentException e) {
+			// ASM's remapper currently throws this if the candidate is an invalid method desc / desc / class
+			Log.warn(LogCategory.CACHE, "Encountered an invalid / unknown Kotlin metdata annotation value '" + candidate + "' in " + currentName, e);
+		} catch (Throwable t) {
+			String msg = "While processing a kotlin metadata annotation value '" + candidate + "' in " + currentName;
+			t.addSuppressed(new Throwable(msg));
+			throw t;
+		}
+		return candidate;
 	}
 }
