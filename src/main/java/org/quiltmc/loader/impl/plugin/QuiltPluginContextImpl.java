@@ -16,6 +16,7 @@
 
 package org.quiltmc.loader.impl.plugin;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
@@ -71,6 +72,16 @@ public class QuiltPluginContextImpl extends BasePluginContext {
 	@Override
 	public ModLoadOption pluginOption() {
 		return optionFrom;
+	}
+
+	@Override
+	public void addToPluginClassPath(Path path) throws IOException {
+		classLoader.addToPluginClassPath(optionFrom.id(), path);
+	}
+
+	@Override
+	public void addSubfolderToPluginClassPath(Path root, Path... subfolders) throws IOException {
+		classLoader.addSubfolder(optionFrom.id(), root, subfolders);
 	}
 
 	Map<String, LoaderValue> unload() {

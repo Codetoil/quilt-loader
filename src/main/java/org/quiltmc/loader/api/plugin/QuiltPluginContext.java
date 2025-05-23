@@ -16,10 +16,13 @@
 
 package org.quiltmc.loader.api.plugin;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
 
 import org.jetbrains.annotations.ApiStatus;
+import org.quiltmc.loader.api.ExtendedFileSystem;
+import org.quiltmc.loader.api.ExtendedFiles;
 import org.quiltmc.loader.api.gui.QuiltDisplayedError;
 import org.quiltmc.loader.api.gui.QuiltLoaderText;
 import org.quiltmc.loader.api.gui.QuiltTreeNode;
@@ -100,6 +103,25 @@ public interface QuiltPluginContext {
 	 * when you've reported an error via {@link #reportError(QuiltLoaderText)} and don't want to add an extra throwable
 	 * stacktrace to the crash report. */
 	void haltLoading();
+
+	/** Adds either a folder or jar file to the class path of this plugin. The path is treated as the root of all class
+	 * loads.
+	 * <p>
+	 * Classes loaded from this are only accessible to the plugin - you should not use any classes loaded from this in
+	 * your plugins public API!
+	 * <p>
+	 * If you want to only add a subfolder of the given path then you'll need to copy (or
+	 * {@link ExtendedFiles#mount(Path, Path, org.quiltmc.loader.api.MountOption...)}) the files into a new file system.
+	 * 
+	 * @throws IOException if the given path is a file, and we are unable to open the file as a jar file. */
+	void addToPluginClassPath(Path path) throws IOException;
+
+	/** Alternative to {@link #addToPluginClassPath(Path)} which handles only adding some subfolders to the classpath.
+	 * 
+	 * @param root This must be a folder.
+	 * @param subfolders An array of subfolders within the root which will be loaded.
+	 * @throws IOException if a file cannot be loaded while adding the paths to the inner filesystem. */
+	void addSubfolderToPluginClassPath(Path root, Path... subfolders) throws IOException;
 
 	// ###########
 	// # Solving #

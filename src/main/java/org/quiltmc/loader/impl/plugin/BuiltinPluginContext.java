@@ -16,6 +16,7 @@
 
 package org.quiltmc.loader.impl.plugin;
 
+import java.io.IOException;
 import java.nio.file.Path;
 
 import org.quiltmc.loader.api.plugin.QuiltLoaderPlugin;
@@ -41,6 +42,16 @@ class BuiltinPluginContext extends BasePluginContext {
 	@Override
 	public ModLoadOption pluginOption() {
 		throw new UnsupportedOperationException("Builtin plugins don't support pluginOption()");
+	}
+
+	@Override
+	public void addToPluginClassPath(Path path) throws IOException {
+		throw new UnsupportedOperationException("Builtin plugins cannot have their classpath extended!");
+	}
+
+	@Override
+	public void addSubfolderToPluginClassPath(Path root, Path... subfolders) throws IOException {
+		throw new UnsupportedOperationException("Builtin plugins cannot have their classpath extended!");
 	}
 
 	@Override
