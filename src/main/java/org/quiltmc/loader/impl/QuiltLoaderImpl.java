@@ -131,7 +131,7 @@ public final class QuiltLoaderImpl {
 
 	public static final int ASM_VERSION = Opcodes.ASM9;
 
-	public static final String VERSION = "0.29.0-beta.6";
+	public static final String VERSION = "0.29.0-beta.7";
 	public static final String MOD_ID = "quilt_loader";
 	public static final String DEFAULT_MODS_DIR = "mods";
 	public static final String DEFAULT_CACHE_DIR = ".cache";
@@ -728,7 +728,15 @@ public final class QuiltLoaderImpl {
 			System.exit(1);
 			throw new Error("System.exit(1) Failed!");
 		} catch (Exception e) {
-			throw new Error(e);
+			if (crashReportFile == null) {
+				StringBuilder text = new StringBuilder();
+				text.append("Failed to open the error gui, and also failed to write the original crash report!\n\n");
+				text.append(fullCrashText);
+				throw new Error(text.toString(), e);
+			} else {
+				throw new Error("Failed to open the error gui - please see the original crash report "
+					+ crashReportFile, e);
+			}
 		}
 	}
 

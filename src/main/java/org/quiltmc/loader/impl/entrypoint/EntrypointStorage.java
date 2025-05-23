@@ -222,7 +222,7 @@ public final class EntrypointStorage {
 					T instance = entry.getOrCreate(type);
 					if (instance == null) continue;
 
-					container = new EntrypointContainerImpl<>(entry.getModContainer(), instance);
+					container = new EntrypointContainerImpl<>(entry.getModContainer(), entry.getDefinition(), instance);
 				} catch (Throwable t) {
 					QuiltEntrypointException e2 = new QuiltEntrypointException(key, entry.getModContainer().metadata().id(), t);
 					if (exc == null) {
@@ -234,7 +234,7 @@ public final class EntrypointStorage {
 					continue;
 				}
 			} else {
-				container = new EntrypointContainerImpl<>(entry.getModContainer(), () -> {
+				container = new EntrypointContainerImpl<>(entry.getModContainer(), entry.getDefinition(), () -> {
 				try {
 					return entry.getOrCreate(type);
 				} catch (Exception | LinkageError ex) {

@@ -119,12 +119,16 @@ final class RuntimeModRemapper {
 		}
 		Set<InputTag> remapMixins = new HashSet<>();
 
-		TinyRemapper remapper = TinyRemapper.newRemapper()
+		TinyRemapper.Builder remapBuilder = TinyRemapper.newRemapper()
 				.withMappings(TinyUtils.createMappingProvider(mappingConfiguration.getMappings(), "intermediary", mappingConfiguration.getTargetNamespace()))
 				.renameInvalidLocals(false)
-				.extension(new MixinExtension(remapMixins::contains))
-				.extraPreApplyVisitor(KotlinMetadataRemapper::new)
-				.build();
+				.extension(new MixinExtension(remapMixins::contains));
+
+		if (!Boolean.getBoolean(SystemProperties.DISABLE_KOTLIN_METADATA_REMAP)) {
+			remapBuilder.extraPreApplyVisitor(KotlinMetadataRemapper::new);
+		}
+
+		TinyRemapper remapper = remapBuilder.build();
 
 		try {
 			remap0(cache, launcher, remapMixins, remapper);

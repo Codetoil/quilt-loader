@@ -2,6 +2,10 @@ package org.quiltmc.loader.impl.game.minecraft.applet;
 
 import java.io.File;
 
+import org.quiltmc.loader.impl.util.QuiltLoaderInternal;
+import org.quiltmc.loader.impl.util.QuiltLoaderInternalType;
+
+@QuiltLoaderInternal(QuiltLoaderInternalType.LEGACY_NO_WARN)
 public final class AppletMain {
 	private AppletMain() { }
 

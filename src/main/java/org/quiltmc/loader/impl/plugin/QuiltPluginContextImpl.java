@@ -68,6 +68,11 @@ public class QuiltPluginContextImpl extends BasePluginContext {
 		return pluginPath;
 	}
 
+	@Override
+	public ModLoadOption pluginOption() {
+		return optionFrom;
+	}
+
 	Map<String, LoaderValue> unload() {
 		Map<String, LoaderValue> data = new HashMap<>();
 

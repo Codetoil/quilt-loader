@@ -24,6 +24,7 @@ import org.quiltmc.loader.impl.util.QuiltLoaderInternal;
 import org.quiltmc.loader.impl.util.QuiltLoaderInternalType;
 
 import java.util.List;
+
 @ApiStatus.Experimental
 @QuiltLoaderInternal(QuiltLoaderInternalType.LEGACY_EXPOSED) // only accessible to people implementing GameProviders
 public interface MappingConfiguration {

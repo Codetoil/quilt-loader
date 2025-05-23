@@ -28,7 +28,7 @@ import org.quiltmc.loader.impl.util.QuiltLoaderInternal;
 import org.quiltmc.loader.impl.util.QuiltLoaderInternalType;
 import org.quiltmc.loader.impl.entrypoint.GameTransformer;
 import org.quiltmc.loader.impl.metadata.qmj.InternalModMetadata;
-
+import org.quiltmc.loader.impl.transformer.PackageAccessFixer;
 import org.quiltmc.loader.impl.launch.common.QuiltLauncher;
 
 import org.quiltmc.loader.impl.util.Arguments;
@@ -48,6 +48,19 @@ public interface GameProvider {
 	 * The mapping configuration for the game. Unobfuscated games should use {@link EmptyMappingConfiguration}.
 	 */
 	MappingConfiguration getMappingConfiguration();
+
+	/** @return True if the game itself (identified by {@link #getGameId()}) should be fully access-widend by
+	 *         {@link PackageAccessFixer}. This is normally only useful if your mappings moves classes between packages,
+	 *         and doesn't widen private members. */
+	default boolean requiresPackageAccessFix() {
+		// Compatibility code - we need this to always run
+		MappingConfiguration mappingConfig = getMappingConfiguration();
+		if (mappingConfig instanceof MappingConfigurationImpl) {
+			return ((MappingConfigurationImpl) mappingConfig).requiresPackageAccessHack();
+		}
+		return false;
+	}
+
 	boolean requiresUrlClassLoader();
 
 	boolean isEnabled();

@@ -28,21 +28,40 @@ import org.quiltmc.loader.impl.util.QuiltLoaderInternalType;
 public class EntrypointContainerImpl<T> implements EntrypointContainer<T> {
 	private final ModContainer container;
 	private final Supplier<T> entrypointSupplier;
+	private final String definition;
 	private T instance;
+
+	/**
+	 * @deprecated As this version omits the {@link #getDefinition()} field.
+	 */
+	@Deprecated
+	public EntrypointContainerImpl(ModContainer container, Supplier<T> entrypointSupplier) {
+		this(container, "", entrypointSupplier);
+	}
 
 	/**
 	 * Create EntrypointContainer with lazy init.
 	 */
-	public EntrypointContainerImpl(ModContainer container, Supplier<T> entrypointSupplier) {
+	public EntrypointContainerImpl(ModContainer container, String definition, Supplier<T> entrypointSupplier) {
 		this.container = container;
+		this.definition = definition;
 		this.entrypointSupplier = entrypointSupplier;
+	}
+
+	/**
+	 * @deprecated As this version omits the {@link #getDefinition()} field.
+	 */
+	@Deprecated
+	public EntrypointContainerImpl(ModContainer container, T instance) {
+		this(container, "", instance);
 	}
 
 	/**
 	 * Create EntrypointContainer without lazy init.
 	 */
-	public EntrypointContainerImpl(ModContainer container, T instance) {
+	public EntrypointContainerImpl(ModContainer container, String definition, T instance) {
 		this.container = container;
+		this.definition = definition;
 		this.entrypointSupplier = null;
 		this.instance = instance;
 	}
@@ -60,5 +79,10 @@ public class EntrypointContainerImpl<T> implements EntrypointContainer<T> {
 	@Override
 	public ModContainer getProvider() {
 		return container;
+	}
+
+	@Override
+	public String getDefinition() {
+		return definition;
 	}
 }

@@ -23,6 +23,7 @@ import java.net.URLStreamHandlerFactory;
 import org.quiltmc.loader.impl.filesystem.QuiltBasePath;
 import org.quiltmc.loader.impl.filesystem.QuiltClassPath;
 import org.quiltmc.loader.impl.filesystem.QuiltMapFileSystem;
+import org.quiltmc.loader.impl.transformer.KotlinMetadataRemapper;
 
 @QuiltLoaderInternal(QuiltLoaderInternalType.LEGACY_EXPOSED)
 public final class SystemProperties {
@@ -116,6 +117,9 @@ public final class SystemProperties {
 
 	/** Prevents loader from transforming classes with ReflectiveFixer */
 	public static final String DISABLE_REFLECTIVE_FIXES = "loader.transform.reflective_fixes.disable";
+
+	/** Disables {@link KotlinMetadataRemapper}. */
+	public static final String DISABLE_KOTLIN_METADATA_REMAP = "loader.transform.kotlin_metadata_remap.disable";
 
 	// ##############
 	// # Validation #

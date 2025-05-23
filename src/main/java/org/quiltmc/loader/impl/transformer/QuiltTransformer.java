@@ -25,6 +25,7 @@ import net.fabricmc.api.EnvType;
 import org.jetbrains.annotations.Nullable;
 import org.quiltmc.loader.api.plugin.solver.ModLoadOption;
 import org.quiltmc.loader.impl.QuiltLoaderImpl;
+import org.quiltmc.loader.impl.game.GameProvider;
 import org.quiltmc.loader.impl.game.MappingConfigurationImpl;
 import org.quiltmc.loader.impl.launch.common.QuiltLauncherBase;
 import org.quiltmc.loader.impl.util.QuiltLoaderInternal;
@@ -39,13 +40,14 @@ import net.fabricmc.accesswidener.AccessWidenerClassVisitor;
 @QuiltLoaderInternal(QuiltLoaderInternalType.NEW_INTERNAL)
 final class QuiltTransformer {
 	public static byte @Nullable [] transform(boolean isDevelopment, EnvType envType, TransformCache cache, AccessWidener accessWidener, String name, ModLoadOption mod, byte[] bytes) {
-		boolean isGameClass = mod.id().equals(QuiltLoaderImpl.INSTANCE.getGameProvider().getGameId());
-		boolean transformAccess = isGameClass && ((MappingConfigurationImpl) QuiltLauncherBase.getLauncher().getMappingConfiguration()).requiresPackageAccessHack();
+		GameProvider gameProvider = QuiltLoaderImpl.INSTANCE.getGameProvider();
+		boolean isGameClass = mod.id().equals(gameProvider.getGameId());
+		boolean transformAccess = isGameClass && gameProvider.requiresPackageAccessFix();
 		boolean strip = !isGameClass || isDevelopment;
 		boolean applyAccessWidener = isGameClass && accessWidener.getTargets().contains(name);
-		boolean reflectiveFixes = !isGameClass;
+		boolean reflectiveFixes = !isGameClass && !Boolean.getBoolean(SystemProperties.DISABLE_REFLECTIVE_FIXES);
 
-		if (!transformAccess && !strip && !applyAccessWidener) {
+		if (!transformAccess && !strip && !applyAccessWidener && !reflectiveFixes) {
 			return bytes;
 		}
 
@@ -113,7 +115,7 @@ final class QuiltTransformer {
 			visitorCount++;
 		}
 
-		if (reflectiveFixes && !Boolean.getBoolean(SystemProperties.DISABLE_REFLECTIVE_FIXES)) {
+		if (reflectiveFixes) {
 			visitor = new ReflectiveFixer(QuiltLoaderImpl.ASM_VERSION, visitor);
 			visitorCount++;
 		}

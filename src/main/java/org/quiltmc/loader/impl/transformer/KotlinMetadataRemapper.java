@@ -86,6 +86,7 @@ public class KotlinMetadataRemapper extends ClassVisitor {
 			}
 		} catch (IllegalArgumentException e) {
 			// ASM's remapper currently throws this if the candidate is an invalid method desc / desc / class
+			// TODO: Reimplement this in a way that won't generate exceptions!
 			Log.warn(LogCategory.CACHE, "Encountered an invalid / unknown Kotlin metdata annotation value '" + candidate + "' in " + currentName, e);
 		} catch (Throwable t) {
 			String msg = "While processing a kotlin metadata annotation value '" + candidate + "' in " + currentName;

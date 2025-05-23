@@ -19,6 +19,7 @@ package org.quiltmc.loader.impl.plugin;
 import java.nio.file.Path;
 
 import org.quiltmc.loader.api.plugin.QuiltLoaderPlugin;
+import org.quiltmc.loader.api.plugin.solver.ModLoadOption;
 import org.quiltmc.loader.impl.util.QuiltLoaderInternal;
 import org.quiltmc.loader.impl.util.QuiltLoaderInternalType;
 
@@ -35,6 +36,11 @@ class BuiltinPluginContext extends BasePluginContext {
 	@Override
 	public Path pluginPath() {
 		throw new UnsupportedOperationException("Builtin plugins don't support pluginPath()");
+	}
+
+	@Override
+	public ModLoadOption pluginOption() {
+		throw new UnsupportedOperationException("Builtin plugins don't support pluginOption()");
 	}
 
 	@Override

@@ -54,6 +54,9 @@ public interface QuiltPluginContext {
 	 *         {@link Class#getResource(String)}. */
 	Path pluginPath();
 
+	/** @return The original {@link ModLoadOption} that this plugin is loaded from. */
+	ModLoadOption pluginOption();
+
 	// ##############
 	// # Operations #
 	// ##############
