@@ -1,7 +1,9 @@
 Changes:
 
 
-Changes from Updating Fabric Loader from 0.16.10 to 0.16.13:
+Changes from Updating Fabric Loader from 0.16.10 to 0.16.14:
 
 - Added support for 1.21.6 snapshots
 - Added support for the 25w14craftmine snapshot.
+- Updated ASM from 9.7.1 to 9.8
+- Updated Fabric Mixin to 0.15.5+mixin.0.8.7
