@@ -21,18 +21,20 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.SortedMap;
-import java.util.SortedSet;
 
 import org.objectweb.asm.ClassReader;
 import org.quiltmc.loader.api.FasterFiles;
+import org.quiltmc.loader.api.LoaderValue;
+import org.quiltmc.loader.api.LoaderValue.LType;
 import org.quiltmc.loader.api.gui.QuiltDisplayedError;
 import org.quiltmc.loader.api.gui.QuiltLoaderGui;
 import org.quiltmc.loader.api.gui.QuiltLoaderText;
 import org.quiltmc.loader.api.gui.QuiltTreeNode;
 import org.quiltmc.loader.api.gui.QuiltWarningLevel;
-import org.quiltmc.loader.impl.gui.QuiltStatusNode;
+import org.quiltmc.loader.api.plugin.LoaderValueFactory;
 import org.quiltmc.loader.impl.util.QuiltLoaderInternal;
 import org.quiltmc.loader.impl.util.QuiltLoaderInternalType;
+import org.quiltmc.parsers.json.ParseException;
 
 @QuiltLoaderInternal(QuiltLoaderInternalType.NEW_INTERNAL)
 public class UnsupportedModChecker {
@@ -51,13 +53,107 @@ public class UnsupportedModChecker {
 		if (type != null) {
 			return type;
 		}
-		// ModLoader check
 		type = checkForModloaderMod(zipRoot);
+		if (type != null) {
+			return type;
+		}
+		type = checkForModrinthPackFile(zipFile, zipRoot);
+		if (type != null) {
+			return type;
+		}
+		type = checkForCurseforgePackFile(zipFile, zipRoot);
 		if (type != null) {
 			return type;
 		}
 		// TODO: Other checks!
 		return new UnknownMod();
+	}
+
+	private static UnsupportedModDetails checkForModrinthPackFile(Path zipFile, Path zipRoot) {
+		if (!zipFile.getFileName().toString().endsWith(".mrpack")) {
+			return null;
+		}
+		Path index = zipRoot.resolve("modrinth.index.json");
+		if (!FasterFiles.exists(index)) {
+			return null;
+		}
+		// In theory we could check for validity or something, but the extension plus index is probably enough
+		return new ModrinthPackFile();
+	}
+
+	private static UnsupportedModDetails checkForCurseforgePackFile(Path zipFile, Path zipRoot) {
+		if (!zipFile.getFileName().toString().endsWith(".zip")) {
+			return null;
+		}
+		Path index = zipRoot.resolve("manifest.json");
+		if (!FasterFiles.exists(index)) {
+			return null;
+		}
+		// Unlike modrinth modpacks, CF modpacks are just zips - so we'll try a lot harder to validate that it's actually a modpack
+		// and not just a random zip that happens to contain a "manifest.json" file
+		try {
+
+			LoaderValue indexJson = LoaderValueFactory.getFactory().read(index);
+
+			if (indexJson instanceof LoaderValue.LObject) {
+				LoaderValue.LObject indexObj = (LoaderValue.LObject) indexJson;
+
+				// I'm not sure what the exact spec is,
+				// but the few modpacks I downloaded contained a "manifestType", and a list of files
+				// In theory the file list is optional though?
+
+				/** If this goes above 1 we assume this is actually a modpack */
+				double confidence = 0;
+
+				LoaderValue manifestType = indexObj.get("manifestType");
+				if (manifestType != null) {
+					confidence += 0.2;
+					if (manifestType.type() == LType.STRING) {
+						if ("minecraftModpack".equals(manifestType.asString())) {
+							return new CurseforgePackFile();
+						}
+					}
+				}
+
+				LoaderValue files = indexObj.get("files");
+				if (files != null && files.type() == LType.ARRAY) {
+
+					double average = 0.0;
+
+					for (LoaderValue file : files.asArray()) {
+						if (file.type() != LType.OBJECT) {
+							continue;
+						}
+						LoaderValue.LObject fileObj = (LoaderValue.LObject) file;
+						boolean projID = fileObj.containsKey("projectID");
+						boolean fileID = fileObj.containsKey("fileID");
+						if (projID & fileID) {
+							average += 2;
+						} else if (projID | fileID) {
+							average += 0.75;
+						}
+					}
+
+					if (!files.asArray().isEmpty()) {
+						confidence += average / (files.asArray().size() + 1);
+					}
+				}
+
+				if (confidence >= 1) {
+					return new CurseforgePackFile();
+				}
+
+				// In theory we could check the overrides folder
+				// and inspect its contents to see if it contains mods
+				// Is the overrides folder named explicitly as such, or does the manifest state the folder name in the "overrides" property?
+				// I'm unsure, so I'm leaving it alone for now
+				// (In addition, mod modpacks are probably required to contain the manifestType, so it might be unnecessary)
+			}
+
+		} catch (IOException | ParseException ignored) {
+			return null;
+		}
+		return null;
 	}
 
 	private static UnsupportedModDetails checkForModloaderMod(Path zipRoot) throws IOException {
@@ -125,7 +221,20 @@ public class UnsupportedModChecker {
 			}
 		},
 		FORGE("forge"),
-		NEOFORGE("neoforge");
+		NEOFORGE("neoforge"),
+		MODRINTH_PACK("modrinth_pack") {
+
+			@Override
+			QuiltDisplayedError createMessage(QuiltPluginManagerImpl manager, SortedMap<String, UnsupportedModDetails> files) {
+				QuiltDisplayedError message = super.createMessage(manager, files);
+				message.addOpenLinkButton(
+					QuiltLoaderText.of("Open Modrinth Support Page"),
+					"https://support.modrinth.com/en/articles/8802250-modpacks-on-modrinth"
+				);
+				return message;
+			}
+		},
+		CURSEFORGE_MODPACK("curseforge_modpack");
 
 		final String type;
 
@@ -180,6 +289,18 @@ public class UnsupportedModChecker {
 	public static final class UnsupportedForgeMod extends UnsupportedModDetails {
 		UnsupportedForgeMod(boolean neoforge) {
 			super(neoforge ? UnsupportedType.NEOFORGE : UnsupportedType.FORGE);
+		}
+	}
+
+	public static final class ModrinthPackFile extends UnsupportedModDetails {
+		ModrinthPackFile() {
+			super(UnsupportedType.MODRINTH_PACK);
+		}
+	}
+
+	public static final class CurseforgePackFile extends UnsupportedModDetails {
+		CurseforgePackFile() {
+			super(UnsupportedType.CURSEFORGE_MODPACK);
 		}
 	}
 }
