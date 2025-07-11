@@ -124,7 +124,8 @@ final class RuntimeModRemapper {
 				.renameInvalidLocals(false)
 				.extension(new MixinExtension(remapMixins::contains));
 
-		if (!Boolean.getBoolean(SystemProperties.DISABLE_KOTLIN_METADATA_REMAP)) {
+		String kotlinSysProp = System.getProperty(SystemProperties.DISABLE_KOTLIN_METADATA_REMAP, "true");
+		if (!"true".equalsIgnoreCase(kotlinSysProp)) {
 			remapBuilder.extraPreApplyVisitor(KotlinMetadataRemapper::new);
 		}
 
