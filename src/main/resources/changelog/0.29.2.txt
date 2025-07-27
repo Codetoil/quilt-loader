@@ -8,3 +8,4 @@ Changes from updating Fabric Loader from 0.16.14 to 0.17.2:
 - Updated Mixin Extras to 0.5.0
 - Added versioning support for 1.21.9 snapshots.
 - Updated how version normalisation works for older Minecraft versions.
+- Add field write stripping with @Environment (this also affects the quilt annotations @ClientOnly/@DedicatedServerOnly/@Requires)
