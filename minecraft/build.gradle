@@ -24,6 +24,11 @@ dependencies {
 		transitive = false
 	}
 	//implementation 'net.sf.jopt-simple:jopt-simple:5.0.3'
+
+	// Unit testing for semver
+	implementation project(":").sourceSets.main.output
+	testImplementation('org.junit.jupiter:junit-jupiter:5.9.3')
+	testRuntimeOnly('org.junit.platform:junit-platform-launcher')
 }
 
 sourceSets {
@@ -38,4 +43,13 @@ tasks.withType(JavaCompile).configureEach {
 
 jar {
 	enabled = false
+}
+
+test {
+	useJUnitPlatform()
+}
+
+java {
+	sourceCompatibility = JavaVersion.VERSION_1_8
+	targetCompatibility = JavaVersion.VERSION_1_8
 }
