@@ -1,0 +1,3 @@
+Bug Fixes:
+
+- [#474] Fixed ReflectiveFixUtil crashing with certain method descriptors
