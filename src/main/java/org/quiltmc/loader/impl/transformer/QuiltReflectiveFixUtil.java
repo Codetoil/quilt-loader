@@ -39,6 +39,7 @@ import org.quiltmc.loader.api.QuiltLoader;
 import org.quiltmc.loader.impl.launch.common.QuiltLauncherBase;
 import org.quiltmc.loader.impl.util.QuiltLoaderInternal;
 import org.quiltmc.loader.impl.util.QuiltLoaderInternalType;
+import org.quiltmc.loader.impl.util.SystemProperties;
 
 import net.fabricmc.mappingio.tree.MappingTreeView;
 import net.fabricmc.mappingio.tree.MappingTreeView.ClassMappingView;
@@ -47,8 +48,10 @@ import net.fabricmc.mappingio.tree.MappingTreeView.MethodMappingView;
 
 /** Internal class. For technical reasons this class cannot be fully private, but it's usage is not recommended.
  * <p>
- * Specifically the methods in this class are added before calls to java reflection methods to fix issues with
- * mappings. */
+ * Specifically the methods in this class are added before calls to java reflection methods to fix issues with mappings.
+ * <p>
+ * This fixer is enabled by default, and can be disabled by setting the system property
+ * {@value SystemProperties#DISABLE_REFLECTIVE_FIXES} to true. */
 @QuiltLoaderInternal(QuiltLoaderInternalType.LEGACY_NO_WARN)
 // The ReflectiveFixer is applied before the InternalsHider
 // which means we don't know if a mod uses this directly, or if it's been added by ReflectiveFixer
@@ -555,7 +558,7 @@ public class QuiltReflectiveFixUtil {
 		StringBuilder result = new StringBuilder();
 		int idxObjDescStart = -1;
 		int idxSemicolon = 0;
-		while ((idxObjDescStart = desc.indexOf('L', idxObjDescStart + 1)) >= 0) {
+		while ((idxObjDescStart = desc.indexOf('L', idxSemicolon + 1)) >= 0) {
 			int previousSemicolon = idxSemicolon;
 			idxSemicolon = desc.indexOf(';', idxObjDescStart);
 			String sub = desc.substring(idxObjDescStart + 1, idxSemicolon).replace('/', '.');
