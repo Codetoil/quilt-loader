@@ -7,6 +7,12 @@ loom {
 	runConfigs.configureEach {
 		ideConfigGenerated = true
 	}
+	mods {
+		minecraft_test {
+			sourceSet sourceSets.main
+			sourceSet sourceSets.test
+		}
+	}
 }
 
 repositories {
@@ -55,6 +61,6 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 runClient {
-    classpath += project(':').sourceSets.main.output
-    classpath += project(':minecraft').sourceSets.main.output
+	classpath += project(':').sourceSets.main.output
+	classpath += project(':minecraft').sourceSets.main.output
 }
