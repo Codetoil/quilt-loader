@@ -15,24 +15,17 @@
  * limitations under the License.
  */
 
-package net.fabricmc.loader.api;
+package net.fabricmc.test;
 
-@Deprecated
-@SuppressWarnings({ "deprecation", "serial" }) //Extending the deprecated one for backwards compatibility
-public class VersionParsingException extends net.fabricmc.loader.util.version.VersionParsingException {
-	public VersionParsingException() {
-		super();
-	}
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-	public VersionParsingException(Throwable t) {
-		super(t);
-	}
+import org.quiltmc.loader.impl.util.Localization;
 
-	public VersionParsingException(String s) {
-		super(s);
-	}
-
-	public VersionParsingException(String s, Throwable t) {
-		super(s, t);
+public class LocalizationTests {
+	@Test
+	public void formatRoot() {
+		Assertions.assertEquals("client", Localization.format("environment.client"));
+		Assertions.assertEquals("Install A, B.", Localization.format("resolution.solution.addMod", "A", "B"));
 	}
 }
