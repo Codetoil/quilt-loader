@@ -47,8 +47,7 @@ public final class ModContainerImpl extends net.fabricmc.loader.ModContainer {
 
 	private final ModContainer quilt;
 
-	// TODO: Turn this back into a public constructor after building to verify it works!!!
-	private ModContainerImpl(ModContainer quilt) {
+	public ModContainerImpl(ModContainer quilt) {
 		this.quilt = quilt;
 	}
 
