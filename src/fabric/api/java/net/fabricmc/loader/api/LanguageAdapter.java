@@ -121,7 +121,7 @@ public interface LanguageAdapter extends org.quiltmc.loader.api.LanguageAdapter 
 			throws org.quiltmc.loader.api.LanguageAdapterException {
 
 		try {
-			return create(new ModContainerImpl(mod), value, type);
+			return create(ModContainerImpl.from(mod), value, type);
 		} catch (LanguageAdapterException e) {
 			throw new org.quiltmc.loader.api.LanguageAdapterException(e);
 		}
