@@ -1,4 +1,4 @@
 Changes:
 
 - [#479] Added the system property `loader.fixPackageAccess` to allow enabling the package access fix in any namespace. (SpaceWalkerRS)
-
+- [#405] Forked gui communications fails sometimes when using IPv6 (fixed by #480) (pandaninjas)
