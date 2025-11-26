@@ -311,7 +311,6 @@ javadoc {
 
 allprojects {
 	license {
-		rule project.rootProject.file("codeformat/FABRIC_MODIFIED_HEADER")
 		rule project.rootProject.file("codeformat/HEADER")
 		include '**/*.java'
 
