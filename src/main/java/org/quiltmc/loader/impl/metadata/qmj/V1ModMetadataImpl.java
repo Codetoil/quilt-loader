@@ -67,7 +67,7 @@ final class V1ModMetadataImpl implements InternalModMetadata {
 	private final Map<String, String> languageAdapters;
 	private final Collection<String> repositories;
 	private final Map<EnvType, Collection<String>> mixins;
-	private final Collection<String> classTweakers;
+	private final Collection<String> accessWideners;
 	private final ModEnvironment environment;
 	private final @Nullable ModPlugin plugin;
 	private QuiltModMetadataWrapperFabric cache2fabricNoContainer;
@@ -131,7 +131,7 @@ final class V1ModMetadataImpl implements InternalModMetadata {
 
 		// Move to plugins
 		this.mixins = Collections.unmodifiableMap(builder.mixins);
-		this.classTweakers = Collections.unmodifiableCollection(builder.classTweakers);
+		this.accessWideners = Collections.unmodifiableCollection(builder.accessWideners);
 		this.environment = builder.env;
 
 		// Experimental
@@ -310,8 +310,8 @@ final class V1ModMetadataImpl implements InternalModMetadata {
 	}
 
 	@Override
-	public Collection<String> classTweakers() {
-		return this.classTweakers;
+	public Collection<String> accessWideners() {
+		return this.accessWideners;
 	}
 
 	@Override

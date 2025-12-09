@@ -38,7 +38,7 @@ public interface ModMetadataToBeMovedToPlugins extends ModMetadata {
 	 */
 	Collection<String> mixins(EnvType env);
 
-	Collection<String> classTweakers();
+	Collection<String> accessWideners();
 
 	ModEnvironment environment();
 }

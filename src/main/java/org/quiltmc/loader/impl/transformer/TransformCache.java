@@ -91,7 +91,7 @@ class TransformCache {
 
 						}
 					}
-					for (String aw : mod.metadata().classTweakers()) {
+					for (String aw : mod.metadata().accessWideners()) {
 						copyFile(modSrc.resolve(aw), modSrc, modDst);
 					}
 

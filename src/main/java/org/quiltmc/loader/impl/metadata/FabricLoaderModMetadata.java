@@ -47,7 +47,7 @@ public interface FabricLoaderModMetadata extends ModMetadata, ConvertibleModMeta
 	Collection<NestedJarEntry> getJars();
 	Collection<String> getMixinConfigs(EnvType type);
 	@Nullable
-	String getClassTweaker();
+	String getAccessWidener();
 	@Override
 	boolean loadsInEnvironment(EnvType type);
 

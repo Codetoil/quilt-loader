@@ -201,9 +201,9 @@ final class RuntimeModRemapper {
 			// Run while the remapper is doing its thing.
 			for (ModLoadOption mod : modsToRemap) {
 				RemapInfo info = infoMap.get(mod);
-				if (!mod.metadata().classTweakers().isEmpty()) {
+				if (!mod.metadata().accessWideners().isEmpty()) {
 					info.classTweakers = new HashMap<>();
-					for (String classTweaker : mod.metadata().classTweakers()) {
+					for (String classTweaker : mod.metadata().accessWideners()) {
 						// use resourceRoot as the info.inputPath only contains class files
 						info.classTweakers.put(classTweaker, remapClassTweaker(Files.readAllBytes(mod.resourceRoot().resolve(classTweaker)), remapper.getRemapper()));
 					}

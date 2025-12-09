@@ -112,7 +112,7 @@ final class TransformCacheGenerator {
 		ClassTweakerReader classTweakerReader = ClassTweakerReader.create(ret);
 
 		for (ModLoadOption mod : cache.getModsInCache()) {
-			for (String classTweaker : mod.metadata().classTweakers()) {
+			for (String classTweaker : mod.metadata().accessWideners()) {
 
 				Path path = cache.getRoot(mod).resolve(classTweaker);
 
