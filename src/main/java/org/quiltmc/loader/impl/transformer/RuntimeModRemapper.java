@@ -64,6 +64,7 @@ import net.fabricmc.tinyremapper.extension.mixin.MixinExtension;
 @QuiltLoaderInternal(QuiltLoaderInternalType.NEW_INTERNAL)
 final class RuntimeModRemapper {
 	private static final String REMAP_TYPE_MANIFEST_KEY = "Fabric-Loom-Mixin-Remap-Type";
+	private static final String REMAP_TYPE_MIXIN = "mixin";
 	private static final String REMAP_TYPE_STATIC = "static";
 
 	private final Set<ModLoadOption> modsToRemap = new LinkedHashSet<>();
@@ -117,7 +118,8 @@ final class RuntimeModRemapper {
 		Set<InputTag> remapMixins = new HashSet<>();
 
 		TinyRemapper.Builder remapBuilder = TinyRemapper.newRemapper()
-				.withMappings(TinyUtils.createMappingProvider(mappingConfiguration.getMappings(), "intermediary", mappingConfiguration.getTargetNamespace()))
+				.withMappings(TinyUtils.createMappingProvider(mappingConfiguration.getMappings(),
+						"intermediary", mappingConfiguration.getTargetNamespace()))
 				.renameInvalidLocals(false)
 				.extension(new MixinExtension(remapMixins::contains));
 
@@ -150,6 +152,8 @@ final class RuntimeModRemapper {
 
 		QuiltUnifiedFileSystem fs = new QuiltUnifiedFileSystem("transform-cache-remapping", false);
 
+		String defaultMixinRemapType = System.getProperty(SystemProperties.DEFAULT_MIXIN_REMAP_TYPE, REMAP_TYPE_MIXIN);
+
 		try {
 			Map<ModLoadOption, RemapInfo> infoMap = new HashMap<>();
 
@@ -159,7 +163,7 @@ final class RuntimeModRemapper {
 				InputTag tag = remapper.createInputTag();
 				info.tag = tag;
 
-				if (requiresMixinRemap(mod.resourceRoot())) {
+				if (requiresMixinRemap(mod.resourceRoot(), defaultMixinRemapType)) {
 					remapMixins.add(tag);
 				}
 
@@ -250,13 +254,17 @@ final class RuntimeModRemapper {
 				.collect(Collectors.toList());
 	}
 
-	private static boolean requiresMixinRemap(Path inputPath) throws IOException {
+	private static boolean requiresMixinRemap(Path inputPath, String defaultMixinRemapType) throws IOException {
 		final Manifest manifest = ManifestUtil.readManifest(inputPath);
 		if (manifest == null) {
 			return false;
 		}
 		final Attributes mainAttributes = manifest.getMainAttributes();
-		return REMAP_TYPE_STATIC.equalsIgnoreCase(mainAttributes.getValue(REMAP_TYPE_MANIFEST_KEY));
+
+		String remapType = mainAttributes.getValue(REMAP_TYPE_MANIFEST_KEY);
+		if (remapType == null) remapType = defaultMixinRemapType;
+
+		return REMAP_TYPE_STATIC.equalsIgnoreCase(remapType);
 	}
 
 	private static class RemapInfo {
