@@ -25,7 +25,9 @@ java {
 	withSourcesJar()
 }
 
-archivesBaseName = "quilt-loader"
+base {
+	archivesName = "quilt-loader"
+}
 version = project.quilt_loader
 def ENV = System.getenv()
 
@@ -89,7 +91,7 @@ dependencies {
 	compileOnly "org.quiltmc.chasm:chasm:${project.quilt_chasm}"
 	compileOnly "org.quiltmc.chasm:chassembly:${project.quilt_chasm}"
 
-	testCompileOnly "org.jetbrains:annotations:${project.annotations}"
+	testCompileOnly "org.jspecify:jspecify:${project.jspecify}"
 
 	// Unit testing
 	testImplementation(platform("org.junit:junit-bom:${project.junit_bom}"))
@@ -247,7 +249,7 @@ task copyJson() {
 	def inJson = file('build/resources/main/quilt_installer.json')
 	//def inLwJson = file('src/main/resources/fabric-installer.launchwrapper.json')
 
-	def outJson = file("build/libs/${archivesBaseName}-${version}.json")
+	def outJson = file("build/libs/${name}-${version}.json")
 	//def outLwJson = file("build/libs/${archivesBaseName}-${version}.launchwrapper.json")
 
 	inputs.files (inJson, /*inLwJson*/)
