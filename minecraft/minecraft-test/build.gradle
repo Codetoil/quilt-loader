@@ -21,7 +21,7 @@ repositories {
 
 dependencies {
 	testImplementation(platform("org.junit:junit-bom:${project.junit_bom}"))
-	testImplementation 'org.junit.jupiter:junit-jupiter'
+	testImplementation "org.junit.jupiter:junit-jupiter"
 	minecraft "com.mojang:minecraft:1.20.6"
 	mappings "org.quiltmc:quilt-mappings:1.20.6+build.6:intermediary-v2"
 
@@ -45,8 +45,8 @@ dependencies {
 	 * Otherwise Loom will default to an older version (due to no mod loader on the mod* configs)
 	 */
 	annotationProcessor ("net.fabricmc:sponge-mixin:${project.sponge_mixin}") {
-		exclude module: 'launchwrapper'
-		exclude module: 'guava'
+		exclude module: "launchwrapper"
+		exclude module: "guava"
 	}
 
 	testImplementation project(":junit")
@@ -62,6 +62,6 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 runClient {
-	classpath += project(':').sourceSets.main.output
-	classpath += project(':minecraft').sourceSets.main.output
+	classpath += project(":").sourceSets.main.output
+	classpath += project(":minecraft").sourceSets.main.output
 }
