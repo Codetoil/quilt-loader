@@ -29,8 +29,8 @@ configurations {
 
 dependencies {
 	api project(":")
-	localImplementation project(':dependencies')
-	localImplementation project(path: ':dependencies', configuration: 'include')
+	localImplementation project(":dependencies")
+	localImplementation project(path: ":dependencies", configuration: "include")
 
 	api platform("org.junit:junit-bom:${project.junit_bom}")
 	api "org.junit.jupiter:junit-jupiter-engine"
