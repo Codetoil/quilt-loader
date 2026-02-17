@@ -43,6 +43,8 @@ public final class SystemProperties {
 	public static final String TARGET_NAMESPACE = "loader.experimental.minecraft.targetNamespace";
 	public static final String GAME_VERSION = "loader.gameVersion";
 	public static final String REMAP_CLASSPATH_FILE = "loader.remapClasspathFile";
+	// mixin remap type to assume mods are using when not explicit stated, defaults to mixin
+	public static final String DEFAULT_MIXIN_REMAP_TYPE = "loader.defaultMixinRemapType";
 	public static final String UNIT_TEST = "loader.unitTest";
 	public static final String DEBUG_MOD_SOLVING = "loader.debug.mod_solving";
 	public static final String PRINT_MOD_SOLVING_RESULTS = "loader.mod_solving.print_results";
