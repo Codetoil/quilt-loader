@@ -47,7 +47,7 @@ public final class MappingConfiguration {
 
 
 	public String getTargetNamespace() {
-		return cast().getTargetNamespace();
+		return cast().getRuntimeNamespace();
 	}
 
 	public boolean requiresPackageAccessHack() {

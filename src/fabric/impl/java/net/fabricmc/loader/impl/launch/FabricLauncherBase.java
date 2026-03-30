@@ -27,7 +27,6 @@ import org.quiltmc.loader.impl.launch.common.QuiltLauncherBase;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.jar.Manifest;
@@ -104,7 +103,7 @@ public class FabricLauncherBase implements FabricLauncher {
 
 	@Override
 	public String getTargetNamespace() {
-		return delegate.getTargetNamespace();
+		return delegate.getRuntimeNamespace();
 	}
 
 	@Override

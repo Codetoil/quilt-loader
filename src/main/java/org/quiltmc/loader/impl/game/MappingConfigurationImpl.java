@@ -69,7 +69,8 @@ public class MappingConfigurationImpl implements MappingConfiguration {
 	private String mappingsSource;
 	private VisitableMappingTree mappings = new MemoryMappingTree(true);
 	private List<String> namespaces;
-	private String targetNamespace;
+	private String modDistributionNamespace;
+	private String runtimeNamespace;
 
 	public String getGameId() {
 		initialize();
@@ -83,17 +84,18 @@ public class MappingConfigurationImpl implements MappingConfiguration {
 		return gameVersion;
 	}
 
-	public String getMappingsSource() {
-		initialize();
-
-		return mappingsSource;
-	}
-
 	public boolean matches(String gameId, String gameVersion) {
 		initialize();
 
 		return (this.gameId == null || gameId == null || gameId.equals(this.gameId))
 				&& (this.gameVersion == null || gameVersion == null || gameVersion.equals(this.gameVersion));
+	}
+
+	@Override
+	public List<String> getNamespaces() {
+		initialize();
+
+		return namespaces;
 	}
 
 	@Nullable
@@ -105,22 +107,32 @@ public class MappingConfigurationImpl implements MappingConfiguration {
 	}
 
 	@Override
-	public List<String> getNamespaces() {
-		initialize();
-
-		return namespaces;
+	public String getRuntimeNamespace() {
+		if (runtimeNamespace == null) {
+			runtimeNamespace = System.getProperty(SystemProperties.RUNTIME_MAPPINGS_NAMEPSACE,
+					(mappings != null) ? (QuiltLauncherBase.getLauncher().isDevelopment() ? "named" : "intermediary") :
+							"official");
+		}
+		return runtimeNamespace;
 	}
 
 	@Override
-	public String getTargetNamespace() {
-		if (targetNamespace == null) {
-			targetNamespace = System.getProperty(SystemProperties.TARGET_NAMESPACE, QuiltLauncherBase.getLauncher().isDevelopment() ? "named" : "intermediary");
+	public String getModDistributionNamespace() {
+		if (modDistributionNamespace == null) {
+			modDistributionNamespace = System.getProperty(SystemProperties.DEFAULT_MOD_DISTRIBUTION_NAMESPACE,
+					!getRuntimeNamespace().equals("official") ? "intermediary" : getRuntimeNamespace());
 		}
-		return targetNamespace;
+		return modDistributionNamespace;
 	}
 
 	public boolean requiresPackageAccessHack() {
-		return FIX_PACKAGE_ACCESS || getTargetNamespace().equals("named");
+		return FIX_PACKAGE_ACCESS || getRuntimeNamespace().equals("named");
+	}
+
+	public String getMappingsSource() {
+		initialize();
+
+		return mappingsSource;
 	}
 
 	private void initialize() {
@@ -161,7 +173,7 @@ public class MappingConfigurationImpl implements MappingConfiguration {
 					switch (format) {
 						case TINY_FILE:
 							if (!Tiny1FileReader.getNamespaces(reader).contains(tinyNamespace)) {
-								Log.info(LogCategory.MAPPINGS, "Skipping mappings: Missing namespace '%s'", getTargetNamespace());
+								Log.info(LogCategory.MAPPINGS, "Skipping mappings: Missing namespace '%s'", getRuntimeNamespace());
 								continue;
 							}
 							reader.reset();
@@ -169,7 +181,7 @@ public class MappingConfigurationImpl implements MappingConfiguration {
 							break;
 						case TINY_2_FILE:
 							if (!Tiny2FileReader.getNamespaces(reader).contains(tinyNamespace)) {
-								Log.info(LogCategory.MAPPINGS, "Skipping mappings: Missing namespace '%s'", getTargetNamespace());
+								Log.info(LogCategory.MAPPINGS, "Skipping mappings: Missing namespace '%s'", getRuntimeNamespace());
 								continue;
 							}
 							reader.reset();
@@ -222,17 +234,17 @@ public class MappingConfigurationImpl implements MappingConfiguration {
 			mappings = null;
 		}
 
-		Log.info(LogCategory.MAPPINGS, "Target namespace: %s", getTargetNamespace());
+		Log.info(LogCategory.MAPPINGS, "Target namespace: %s", getRuntimeNamespace());
 
-		if (!namespaces.contains(getTargetNamespace())) {
+		if (!namespaces.contains(getRuntimeNamespace())) {
 			if (!namespaces.isEmpty()) {
-				throw new IllegalStateException(String.format("Requested target namespace %s not loaded. Available options: %s", targetNamespace, namespaces));
+				throw new IllegalStateException(String.format("Requested target namespace %s not loaded. Available options: %s", runtimeNamespace, namespaces));
 			} else {
-				if (getTargetNamespace().equals("official")) {
+				if (getRuntimeNamespace().equals("official")) {
 					Log.warn(LogCategory.MAPPINGS, "Continuing without mappings because target namespace is 'official'");
 				} else {
-					throw new IllegalStateException("Requested target namespace " + targetNamespace + " not loaded. To continue without mappings, " +
-							"set the target namespace to 'official' with -D" + SystemProperties.TARGET_NAMESPACE + "=official");
+					throw new IllegalStateException("Requested target namespace " + runtimeNamespace + " not loaded. To continue without mappings, " +
+							"set the target namespace to 'official' with -D" + SystemProperties.RUNTIME_MAPPINGS_NAMEPSACE + "=official");
 				}
 			}
 		}

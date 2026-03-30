@@ -40,8 +40,13 @@ public interface MappingConfiguration {
 	List<String> getNamespaces();
 
 	/**
+	 * The namespace mods are distributed in.
+	 */
+	String getModDistributionNamespace();
+
+	/**
 	 * The runtime namespace to use. Must not be empty. Must be in {@link #getNamespaces()} unless the game is
 	 * not obfuscated.
 	 **/
-	String getTargetNamespace();
+	String getRuntimeNamespace();
 }

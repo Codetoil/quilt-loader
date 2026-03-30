@@ -54,7 +54,7 @@ public final class TinyFDPatch extends GamePatch {
 		String className = MORE_OPTIONS_DIALOG_CLASS_NAME;
 
 		// Only remap the classname when needed to prevent loading the mappings when not required in prod.
-		if (!launcher.getMappingConfiguration().getTargetNamespace().equals("intermediary")
+		if (!launcher.getMappingConfiguration().getRuntimeNamespace().equals("intermediary")
 				&& QuiltLoader.getMappingResolver().getNamespaces().contains("intermediary")) {
 			className = QuiltLoader.getMappingResolver().mapClassName("intermediary", MORE_OPTIONS_DIALOG_CLASS_NAME);
 		}

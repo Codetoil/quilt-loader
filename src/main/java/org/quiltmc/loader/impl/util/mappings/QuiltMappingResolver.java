@@ -20,13 +20,9 @@ package org.quiltmc.loader.impl.util.mappings;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Stream;
 
 import net.fabricmc.mappingio.tree.MappingTreeView;
-import net.fabricmc.mappingio.tree.MappingTreeView.ClassMappingView;
 
 import net.fabricmc.mappingio.tree.MemoryMappingTree;
 
@@ -38,21 +34,24 @@ import org.quiltmc.loader.impl.util.QuiltLoaderInternalType;
 @QuiltLoaderInternal(QuiltLoaderInternalType.NEW_INTERNAL)
 public class QuiltMappingResolver implements MappingResolver {
 	private final MappingTreeView tree;
-	private final String targetNamespace;
-	private final int targetNamespaceId;
+	private final String runtimeNamespace;
+	private final int runtimeNamespaceId;
+	private final String modDistributionNamespace;
 	private final List<String> namespaces;
 
-	public QuiltMappingResolver(@Nullable MappingTreeView tree, String targetNamespace) {
+	public QuiltMappingResolver(@Nullable MappingTreeView tree, String runtimeNamespace,
+								String modDistributionNamespace) {
 		if (tree == null) {
 			// Will return null (and therefore identity) if namespace == targetNamespace, and otherwise
 			// throw an exception in safeGetId
 			MemoryMappingTree mappings = new MemoryMappingTree();
-			mappings.setSrcNamespace(targetNamespace);
+			mappings.setSrcNamespace(runtimeNamespace);
 			tree = mappings;
 		}
 		this.tree = tree;
-		this.targetNamespace = targetNamespace;
-		this.targetNamespaceId = tree.getNamespaceId(targetNamespace);
+		this.runtimeNamespace = runtimeNamespace;
+		this.runtimeNamespaceId = tree.getNamespaceId(runtimeNamespace);
+		this.modDistributionNamespace = modDistributionNamespace;
 		List<String> namespaces = new ArrayList<>();
 		namespaces.add(tree.getSrcNamespace());
 		namespaces.addAll(tree.getDstNamespaces());
@@ -83,7 +82,12 @@ public class QuiltMappingResolver implements MappingResolver {
 
 	@Override
 	public String getCurrentRuntimeNamespace() {
-		return targetNamespace;
+		return runtimeNamespace;
+	}
+
+	@Override
+	public String getDefaultModDistributionNamespace() {
+		return modDistributionNamespace;
 	}
 
 	@Override
@@ -92,7 +96,7 @@ public class QuiltMappingResolver implements MappingResolver {
 			throw new IllegalArgumentException("Class names must be provided in dot format: " + className);
 		}
 
-		return slashToDot(tree.mapClassName(dotToSlash(className), safeGetId(fromNamespace), targetNamespaceId));
+		return slashToDot(tree.mapClassName(dotToSlash(className), safeGetId(fromNamespace), runtimeNamespaceId));
 	}
 
 	@Override
@@ -101,7 +105,7 @@ public class QuiltMappingResolver implements MappingResolver {
 			throw new IllegalArgumentException("Class names must be provided in dot format: " + className);
 		}
 
-		return slashToDot(tree.mapClassName(dotToSlash(className), targetNamespaceId, tree.getNamespaceId(namespace)));
+		return slashToDot(tree.mapClassName(dotToSlash(className), runtimeNamespaceId, tree.getNamespaceId(namespace)));
 	}
 
 	@Override
@@ -110,7 +114,7 @@ public class QuiltMappingResolver implements MappingResolver {
 			throw new IllegalArgumentException("Class names must be provided in dot format: " + owner);
 		}
 		MappingTreeView.FieldMappingView field = tree.getField(dotToSlash(owner), name, descriptor, safeGetId(fromNamespace));
-		return field == null ? name : field.getName(targetNamespace);
+		return field == null ? name : field.getName(runtimeNamespace);
 	}
 
 	@Override
@@ -120,6 +124,6 @@ public class QuiltMappingResolver implements MappingResolver {
 		}
 
 		MappingTreeView.MethodMappingView method = tree.getMethod(dotToSlash(owner), name, descriptor, safeGetId(fromNamespace));
-		return method == null ? name : method.getName(targetNamespace);
+		return method == null ? name : method.getName(runtimeNamespace);
 	}
 }
