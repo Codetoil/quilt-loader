@@ -314,6 +314,8 @@ public class MinecraftGameProvider implements GameProvider {
 
 		if (versionData.getNormalized().contains("unobfuscated")) {
 			this.mappingConfiguration = new EmptyMappingConfiguration();
+		} else if (Version.of(versionData.getNormalized()).compareTo(Version.of("25.0")) > 0) {
+			this.mappingConfiguration = new EmptyMappingConfiguration();
 		} else {
 			this.mappingConfiguration = new MappingConfigurationImpl();
 		}
