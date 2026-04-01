@@ -312,10 +312,26 @@ public class MinecraftGameProvider implements GameProvider {
 		if (version == null) version = System.getProperty(SystemProperties.GAME_VERSION);
 		versionData = McVersionLookup.getVersion(gameJars, entrypoint, version);
 
+		boolean forceNamespace = false;
+		String targetNamespace = System.getProperty(SystemProperties.TARGET_NAMESPACE);
+		if (targetNamespace != null && !"official".equals(targetNamespace)) {
+			forceNamespace = true;
+		}
+
 		if (versionData.getNormalized().contains("unobfuscated")) {
-			this.mappingConfiguration = new EmptyMappingConfiguration();
+			if (forceNamespace) {
+				Log.info(LogCategory.GAME_PROVIDER, "Forcing a target namespace because " + SystemProperties.TARGET_NAMESPACE + " is set, even though the game version is unobfuscated.");
+				this.mappingConfiguration = new MappingConfigurationImpl();
+			} else {
+				this.mappingConfiguration = new EmptyMappingConfiguration();
+			}
 		} else if (Version.of(versionData.getNormalized()).compareTo(Version.of("25.0")) > 0) {
-			this.mappingConfiguration = new EmptyMappingConfiguration();
+			if (forceNamespace) {
+				Log.info(LogCategory.GAME_PROVIDER, "Forcing a target namespace because " + SystemProperties.TARGET_NAMESPACE + " is set, even though we're on minecraft >25 (so minecraft should be unobfuscated).");
+				this.mappingConfiguration = new MappingConfigurationImpl();
+			} else {
+				this.mappingConfiguration = new EmptyMappingConfiguration();
+			}
 		} else {
 			this.mappingConfiguration = new MappingConfigurationImpl();
 		}
