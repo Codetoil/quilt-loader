@@ -62,10 +62,12 @@ public final class QuiltGuiEntry {
 				report.addStacktraceSection("Exception while building the mods table", 0, t);
 			}
 
+			Path gameDir = QuiltLoader.getGameDir();
+
 			Path crashReportFile = null;
 			String crashReportText = null;
 			try {
-				crashReportFile = report.writeInDirectory(QuiltLoader.getGameDir());
+				crashReportFile = report.writeInDirectory(gameDir);
 			} catch (CrashReportSaveFailed e) {
 				crashReportText = e.fullReportText;
 			}
@@ -98,7 +100,9 @@ public final class QuiltGuiEntry {
 				window.addCopyFileToClipboardButton(QuiltLoaderText.translate("button.copy_crash_report"), crashReportFile);
 			}
 
-			window.addFolderViewButton(QuiltLoaderText.translate("button.open_mods_folder"), QuiltLoaderImpl.INSTANCE.getModsDir());
+			if (gameDir != null) {
+				window.addFolderViewButton(QuiltLoaderText.translate("button.open_mods_folder"), QuiltLoaderImpl.INSTANCE.getModsDir());
+			}
 
 			QuiltErrorButton continueBtn = window.addContinueButton();
 			continueBtn.text(QuiltLoaderText.translate("button.exit"));
