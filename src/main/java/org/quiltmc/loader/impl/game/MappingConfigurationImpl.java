@@ -120,7 +120,7 @@ public class MappingConfigurationImpl implements MappingConfiguration {
 	public String getModDistributionNamespace() {
 		if (modDistributionNamespace == null) {
 			modDistributionNamespace = System.getProperty(SystemProperties.DEFAULT_MOD_DISTRIBUTION_NAMESPACE,
-					!getRuntimeNamespace().equals("official") ? "intermediary" : getRuntimeNamespace());
+					getRuntimeNamespace().equals("official") ? "intermediary" : getRuntimeNamespace());
 		}
 		return modDistributionNamespace;
 	}
