@@ -1,7 +1,13 @@
 Changes:
 
 - Updated quilt config to 1.3.3
+- Treat all minecraft versions after 25 as unobfuscated by default.
 
+Bug Fixes:
+
+- Fixed the logged error for invalid dependencies always reporting the desired mod as missing, rather than including the present version
+    - This is most common when a fabric mod requires a newer version of fabric-loader than what quilt-loader provides.
+- Fixed the crash window not opening if the game provider failed to load.
 
 Changes from updating Fabric Loader from 0.17.3 to 0.19.2:
 
