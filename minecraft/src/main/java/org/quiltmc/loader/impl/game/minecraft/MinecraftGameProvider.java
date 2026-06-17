@@ -174,7 +174,7 @@ public class MinecraftGameProvider implements GameProvider {
 	@Override
 	public List<Path> getGameJars(@Nullable String namespace) {
 		if (namespace == null) {
-			return gameJarsByNamespace.get(QuiltLauncherBase.getLauncher().getTargetNamespace());
+			return gameJarsByNamespace.get(QuiltLauncherBase.getLauncher().getRuntimeNamespace());
 		}
 		return gameJarsByNamespace.get(namespace);
 	}
@@ -423,7 +423,7 @@ public class MinecraftGameProvider implements GameProvider {
 				newJars = GameProviderHelper.deobfuscate(jars,
 						getGameId(), getNormalizedGameVersion(),
 						getLaunchDirectory(),
-						launcher, launcher.getTargetNamespace());
+						launcher, launcher.getRuntimeNamespace());
 			} catch (RuntimeException e) {
 				if ("Unfixable conflicts".equals(e.getMessage())) {
 					String source = ((MappingConfigurationImpl) getMappingConfiguration()).getMappingsSource().replace(File.separator, "/");
@@ -454,11 +454,11 @@ public class MinecraftGameProvider implements GameProvider {
 		}
 
 		realmsJar = newJars.get("realms");
-		gameJarsByNamespace.put(launcher.getTargetNamespace(), Collections.unmodifiableList(new ArrayList<>(newJars.values())));
+		gameJarsByNamespace.put(launcher.getRuntimeNamespace(), Collections.unmodifiableList(new ArrayList<>(newJars.values())));
 
 		if (!launcher.isDevelopment()) {
 			for (String namespace : getMappingConfiguration().getNamespaces()) {
-				if (!namespace.equals("official") && !namespace.equals(launcher.getTargetNamespace())) {
+				if (!namespace.equals("official") && !namespace.equals(launcher.getRuntimeNamespace())) {
 					Map<String, Path> output = GameProviderHelper.deobfuscate(jars, getGameId(), getNormalizedGameVersion(), getLaunchDirectory(), launcher, namespace);
 					gameJarsByNamespace.put(namespace, Collections.unmodifiableList(new ArrayList<>(output.values())));
 				}
@@ -479,7 +479,7 @@ public class MinecraftGameProvider implements GameProvider {
 
 		setupLogHandler(launcher, true);
 
-		transformer.locateEntrypoints(launcher, QuiltLauncherBase.getLauncher().getTargetNamespace(), gameJars);
+		transformer.locateEntrypoints(launcher, QuiltLauncherBase.getLauncher().getRuntimeNamespace(), gameJars);
 	}
 
 	private void setupLogHandler(QuiltLauncher launcher, boolean useTargetCl) {

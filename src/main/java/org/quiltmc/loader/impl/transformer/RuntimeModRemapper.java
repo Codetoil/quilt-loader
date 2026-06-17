@@ -87,7 +87,7 @@ final class RuntimeModRemapper {
 			return;
 		}
 
-		String targetNamespace = mappingConfiguration.getTargetNamespace();
+		String targetNamespace = mappingConfiguration.getRuntimeNamespace();
 		boolean mojmapEnvironment = "mojang".equals(targetNamespace);
 
 		for (ModLoadOption mod : mods) {
@@ -121,7 +121,7 @@ final class RuntimeModRemapper {
 
 		TinyRemapper.Builder remapBuilder = TinyRemapper.newRemapper()
 				.withMappings(TinyUtils.createMappingProvider(mappingConfiguration.getMappings(),
-						"intermediary", mappingConfiguration.getTargetNamespace()))
+						"intermediary", mappingConfiguration.getRuntimeNamespace()))
 				.renameInvalidLocals(false)
 				.extension(new MixinExtension(remapMixins::contains));
 
@@ -236,7 +236,7 @@ final class RuntimeModRemapper {
 
 	private static byte[] remapClassTweaker(byte[] input, Remapper remapper) {
 		ClassTweakerWriter writer = ClassTweakerWriter.create(ClassTweaker.CT_LATEST);
-		ClassTweakerRemapperVisitor remappingVisitor = new ClassTweakerRemapperVisitor(writer, remapper, "intermediary", QuiltLauncherBase.getLauncher().getTargetNamespace());
+		ClassTweakerRemapperVisitor remappingVisitor = new ClassTweakerRemapperVisitor(writer, remapper, "intermediary", QuiltLauncherBase.getLauncher().getRuntimeNamespace());
 		ClassTweakerReader classTweakerReader = ClassTweakerReader.create(remappingVisitor);
 		classTweakerReader.read(input, "intermediary");
 		return writer.getOutput();

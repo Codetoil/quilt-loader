@@ -44,7 +44,7 @@ public class DummyQuiltLauncher implements QuiltLauncher {
 			}
 
 			@Override
-			public String getTargetNamespace() {
+			public String getRuntimeNamespace() {
 				return "intermediary";
 			}
 		};

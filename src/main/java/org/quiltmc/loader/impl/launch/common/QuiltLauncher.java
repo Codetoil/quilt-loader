@@ -79,8 +79,12 @@ public interface QuiltLauncher {
 
 	String getEntrypoint();
 
-	default String getTargetNamespace() {
-		return getMappingConfiguration().getTargetNamespace();
+	default String getRuntimeNamespace() {
+		return getMappingConfiguration().getRuntimeNamespace();
+	}
+
+	default String getModDistributionNamespace() {
+		return getMappingConfiguration().getModDistributionNamespace();
 	}
 
 	List<Path> getClassPath();
