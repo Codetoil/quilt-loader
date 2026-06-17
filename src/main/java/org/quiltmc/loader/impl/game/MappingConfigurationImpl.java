@@ -69,6 +69,7 @@ public class MappingConfigurationImpl implements MappingConfiguration {
 	private String mappingsSource;
 	private VisitableMappingTree mappings = new MemoryMappingTree(true);
 	private List<String> namespaces;
+	private String mappingName;
 	private String modDistributionNamespace;
 	private String runtimeNamespace;
 
@@ -125,6 +126,13 @@ public class MappingConfigurationImpl implements MappingConfiguration {
 		return modDistributionNamespace;
 	}
 
+	@Override
+	public @Nullable String getMappingName() {
+		initialize();
+
+		return mappingName;
+	}
+
 	public boolean requiresPackageAccessHack() {
 		return FIX_PACKAGE_ACCESS || getRuntimeNamespace().equals("named");
 	}
@@ -160,6 +168,7 @@ public class MappingConfigurationImpl implements MappingConfiguration {
 					if (manifest != null) {
 						gameId = ManifestUtil.getManifestValue(manifest, new Name("Game-Id"));
 						gameVersion = ManifestUtil.getManifestValue(manifest, new Name("Game-Version"));
+						mappingName = ManifestUtil.getManifestValue(manifest, new Name("Mapping-Name"));
 					}
 				}
 

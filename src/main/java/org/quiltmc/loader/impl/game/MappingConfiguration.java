@@ -49,4 +49,7 @@ public interface MappingConfiguration {
 	 * not obfuscated.
 	 **/
 	String getRuntimeNamespace();
+
+	@Nullable
+	String getMappingName();
 }
