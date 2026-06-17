@@ -613,7 +613,10 @@ public final class QuiltLoaderImpl {
 				return result;
 			}
 
-			if ((provider != null && !provider.canOpenGui()) || GraphicsEnvironment.isHeadless()) {
+			boolean isCI = System.getenv("CI") != null;
+			boolean isNoGui = SystemProperties.getBoolean(SystemProperties.NO_GUI, false);
+
+			if (isCI || isNoGui || (provider != null && !provider.canOpenGui()) || GraphicsEnvironment.isHeadless()) {
 				return result;
 			}
 
@@ -671,7 +674,11 @@ public final class QuiltLoaderImpl {
 			}
 		}
 
-		if ((provider != null && !provider.canOpenGui()) || GraphicsEnvironment.isHeadless()) {
+
+		boolean isCI = System.getenv("CI") != null;
+		boolean isNoGui = SystemProperties.getBoolean(SystemProperties.NO_GUI, false);
+
+		if (isCI || isNoGui || (provider != null && !provider.canOpenGui()) || GraphicsEnvironment.isHeadless()) {
 			if (crashReportFile != null) {
 				System.err.println("Game crashed! Saved the crash report to " + crashReportFile);
 			}
